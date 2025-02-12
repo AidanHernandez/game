@@ -110,36 +110,36 @@ document.body.onkeyup = function(e) {
 }
 
 
-let down = false;
+
+let isMoving = false;
+let id;
 
 document.body.onkeydown = function(e){
-    if(e.keyCode == 68){
-        down = true;
-        
-        var id = setInterval(frame, 20);
-        function frame() {
-            if (onkeyup) {
-                clearInterval(id);
-            } else {
-                player.x =   player.x + 0.5;
-            }
-        }
+    if(e.keyCode == 68 && !isMoving){
+        isMoving = true;
+        id = setInterval(frame, 20);
+       
     }
 }
 
 document.body.onkeyup = function(e){
-    
-        down = false;
-
+    if(e.keyCode == 68){
+        isMoving = false;
+        clearInterval(id);
+    }
 }
 
-function update(){
-    console.log('working?');
-    if (down) {
-        player.x =   player.x + 0.5;
+
+function frame() {
+    if (isMoving) {
+        player.x = player.x + 10;
     }
-    ctx = gameCanvas.context;
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    player.draw();
-    requestAnimationFrame(update)
+}
+
+
+document.body.onkeyup = function(e){
+        
+    if(e.keyCode == 68){
+        
+    }
 }
