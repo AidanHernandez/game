@@ -1,4 +1,3 @@
-// Frank Poth 08/13/2017
 
 var context, controller, player, loop;
 
@@ -19,7 +18,7 @@ player = {
   y_velocity:0
 
 };
-
+var ground = context.canvas.height - player.y - player.height;
 
 enemy = {
 
@@ -28,10 +27,10 @@ enemy = {
     width:32,
     x:144, 
     x_velocity:0,
-    y:931,
+    y:ground,
     y_velocity:0
   };
-var ground = context.canvas.height - player.y - player.height;
+
 controller = {
 
   left:false,
