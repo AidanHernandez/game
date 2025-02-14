@@ -27,7 +27,7 @@ enemy = {
     width:32,
     x:144, 
     x_velocity:0,
-    y:ground,
+    y:context.canvas.height - 32,
     y_velocity:0
   };
 
