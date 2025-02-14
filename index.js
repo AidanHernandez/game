@@ -1,6 +1,9 @@
 
 var context, controller, player, loop;
-
+let jumpKeyIsStillPressed = false;
+let keyPressStartTime;
+let keyPressEndTime;
+let keyPressDuration;
 
 context = document.querySelector("canvas").getContext("2d");
 
@@ -20,34 +23,23 @@ player = {
 };
 var ground = context.canvas.height - player.y - player.height;
 
-enemy = {
 
-    height:32,
-    jumping:true,
-    width:32,
-    x:144, 
-    x_velocity:0,
-    y:context.canvas.height - 32,
-    y_velocity:0
-  };
 
  
-// Function to create a new enemy
-// function createEnemy(xPosition, yPosition) {
-//   return {
-//     height: 32,
-//     jumping: true,
-//     width: 32,
-//     x: xPosition, 
-//     x_velocity: 0,
-//     y: yPosition,
-//     y_velocity: 0
-//   };
-// }
+function createEnemy(xPosition, yPosition) {
+  return {
+    height: 32,
+    jumping: true,
+    width: 32,
+    x: xPosition, 
+    x_velocity: 0,
+    y: yPosition,
+    y_velocity: 0
+  };
+}
 
-// // Example usage: creating two enemies
-// let enemy1 = createEnemy(144, context.canvas.height - 32);
-// let enemy2 = createEnemy(200, context.canvas.height - 32);
+
+
 
 
 
@@ -67,7 +59,7 @@ controller = {
       case 37:// left key
         controller.left = key_state;
         break;
-    case 65:
+      case 65:
         controller.left = key_state;
         break;
       case 32:
@@ -92,15 +84,59 @@ controller = {
 
 };
 
+
+
+
+document.body.addEventListener("keydown", (e) => {
+  let key = event.key;
+  if(key == 'w'){
+    
+    keyPressStartTime = Date.now();
+
+    
+
+  }
+  
+})
+
+
+
+
+
+document.addEventListener('keyup', (e) => {
+    
+    
+});
+
+
+
 loop = function() {
+  
+  if (controller.up){
+    keyPressEndTime = Date.now()
+    keyPressDuration = keyPressEndTime - keyPressStartTime
+    console.log(`Key was pressed for ${keyPressDuration} milliseconds.`)
+
+    if(keyPressDuration >= 200){
+      console.log("check")
+      player.y_velocity -= 35;
+      player.jumping = true;
+      keyPressDuration =0
+      
+    }
+  }
 
   if (controller.up && player.jumping == false) {
-
-    player.y_velocity -= 25;
-    player.jumping = true;
+    
+    
+      player.y_velocity -= 30;
+    
+      player.jumping = true;
+    
 
   }
 
+  
   if (controller.left) {
 
     player.x_velocity -= 1;
@@ -132,37 +168,75 @@ loop = function() {
     player.jumping = false;
     player.y = ground;
     player.y_velocity = 0;
-
+    jumpKeyIsStillPressed = false;
   }
 
+  if (player.y == ground) {
+
+    jumpKeyIsStillPressed = false;
+  }
   
 
   
 
 
-  // if player is going off the left of the screen
+  
 
-
-    context.fillStyle = "#202020";
-    context.fillRect(0, 0, innerWidth, innerHeight);// x, y, width, height
-    context.fillStyle = "#ff0000";
-    context.beginPath();
-    context.rect(player.x, player.y, player.width, player.height);
-    context.fill();
-    context.fillStyle = "blue";
-    context.beginPath();
-    context.rect(enemy.x, enemy.y, enemy.width, enemy.height);
-
-    context.rect(enemy.x, enemy.y, enemy.width, enemy.height);
-
-    context.fill();
+    
   
     
 
 
-  if (collision({ player, enemy })) {
-    console.log("HIT");
-  }
+  
+
+
+
+
+  //bg color
+  context.fillStyle = "#202020";
+  context.fillRect(0, 0, innerWidth, innerHeight);
+  context.fillStyle = "#ff0000";
+
+
+
+
+
+
+  //make player
+  context.beginPath();
+  context.rect(player.x, player.y, player.width, player.height);
+  context.fill();
+
+
+
+  //creating enemies
+  let enemies = [
+    createEnemy(400, context.canvas.height - 32),
+    createEnemy(0, 900)
+  ];
+  
+
+  context.fillStyle = "blue";
+  context.beginPath();
+  enemies.forEach(enemy => {
+    context.rect(enemy.x, enemy.y, enemy.width, enemy.height);
+  });
+  context.fill();
+  
+  // Collision detection
+  enemies.forEach(enemy => {
+    if (collision({ player, enemy })) {
+      console.log("HIT");
+    }
+  });
+
+
+
+
+
+
+
+
   // call update when the browser is ready to draw again
   window.requestAnimationFrame(loop);
 
@@ -178,39 +252,52 @@ window.requestAnimationFrame(loop);
 
 
 
+
+
+
+
+
+
+
+
+
+
 function collision({ player, enemy }) {
-    if (player.x < enemy.x + enemy.width && player.x + player.width > enemy.x &&
-        player.y < enemy.y + enemy.height && player.y + player.height > enemy.y) {
-        if (player.y + player.height > enemy.y && player.y_velocity > 0) {
-            player.jumping = false;
-            player.y_velocity = 0;
-            player.y = enemy.y - player.height;
+  if (player.x < enemy.x + enemy.width && player.x + player.width > enemy.x && player.y < enemy.y + enemy.height && player.y + player.height > enemy.y) {
+    if (player.y + player.height > enemy.y && player.y_velocity > 0) {
 
-    
-        }
-        else{
+      player.jumping = false;
 
-        
-            if (player.x + player.width > enemy.x && player.x < enemy.x + enemy.width) {
-                if (player.x_velocity > 0) { // Moving to the right
-                    player.x = enemy.x - player.width;  // Set player position to the left of the enemy
-                } else if (player.x_velocity < 0) { // Moving to the left
-                    player.x = enemy.x + enemy.width;  // Set player position to the right of the enemy
-                }
-                player.x_velocity = 0;
-            }
+      player.y_velocity = 0;
+
+      player.y = enemy.y - player.height;
+      jumpKeyIsStillPressed = false;
+
+    } 
+    else{
+      if (player.x + player.width > enemy.x && player.x < enemy.x + enemy.width) {
+        if (player.x_velocity > 0){ 
+          player.x = enemy.x - player.width;  
+          
+        } 
+        else if (player.x_velocity < 0) { 
+          player.x = enemy.x + enemy.width;  
         }
+
+        player.x_velocity = 0;
+      }
     }
+  }
 }
 
 
 
 
-//player.x < enemy.x + enemy.width right side
+//player.x < enemy1.x + enemy1.width right side
 
 
-//player.y < enemy.y + enemy.height bottom
+//player.y < enemy1.y + enemy1.height bottom
 
-//player.x + player.width > enemy.x left side
+//player.x + player.width > enemy1.x left side
 
-//player.y + player.height > enemy.y top
+//player.y + player.height > enemy1.y top
