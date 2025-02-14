@@ -31,6 +31,29 @@ enemy = {
     y_velocity:0
   };
 
+ 
+// Function to create a new enemy
+// function createEnemy(xPosition, yPosition) {
+//   return {
+//     height: 32,
+//     jumping: true,
+//     width: 32,
+//     x: xPosition, 
+//     x_velocity: 0,
+//     y: yPosition,
+//     y_velocity: 0
+//   };
+// }
+
+// // Example usage: creating two enemies
+// let enemy1 = createEnemy(144, context.canvas.height - 32);
+// let enemy2 = createEnemy(200, context.canvas.height - 32);
+
+
+
+
+
+
 controller = {
 
   left:false,
@@ -129,6 +152,9 @@ loop = function() {
     context.fillStyle = "blue";
     context.beginPath();
     context.rect(enemy.x, enemy.y, enemy.width, enemy.height);
+
+    context.rect(enemy.x, enemy.y, enemy.width, enemy.height);
+
     context.fill();
   
     
