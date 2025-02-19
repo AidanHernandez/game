@@ -41,142 +41,91 @@ function createEnemy(xPosition, yPosition) {
 
 
 
-
-
 controller = {
-
-  left:false,
-  right:false,
-  up:false,
-  keyListener:function(event) {
-
+  left: false,
+  right: false,
+  up: false,
+  keyListener: function(event) {
     var key_state = (event.type == "keydown");
 
     switch(event.keyCode) {
-      case 37:// left key
+      case 37: // left key
         controller.left = key_state;
         break;
-      case 65:
+      case 65: // A key
         controller.left = key_state;
         break;
-      case 32:
+      case 32: // space key
         controller.up = key_state;
         break;
-      case 87:
-        controller.up = key_state;
-        break;  
-      case 38:// up key
+      case 87: // W key
         controller.up = key_state;
         break;
-      case 39:// right key
+      case 38: // up key
+        controller.up = key_state;
+        break;
+      case 39: // right key
         controller.right = key_state;
         break;
-    case 68:
+      case 68: // D key
         controller.right = key_state;
         break;
-
     }
-
   }
-
 };
 
 
 
-
-
-
-
-
-
-
-
+let jumpKeyHoldDuration = 0;
 
 loop = function() {
-  
-  let timePressed = 0; // Track how long the key is held down
-  let keyHoldInterval = null; // Variable to hold the interval reference
-  
-  // Assuming you have some mechanism to check key status (e.g., controller or key event listeners)
-  document.addEventListener('keydown', (event) => {
-      if (event.key === 'ArrowUp' || event.code === 'ArrowUp') { // Replace with your controller key condition
-          if (timePressed === 0) { // Start timing when key is first pressed
-              keyHoldInterval = setInterval(() => {
-                  timePressed += 50; // Increment the timePressed by 50ms (adjust if needed)
-              }, 50); // Update time every 50ms (you can adjust this interval for more accuracy)
-          }
-      }
-  });
-  
-  // Stop the timer when key is released (optional if you want to reset on release)
-  document.addEventListener('keyup', (event) => {
-      if (event.key === 'ArrowUp' || event.code === 'ArrowUp') {
-          clearInterval(keyHoldInterval);
-          keyHoldInterval = null;
-          timePressed = 0;
-      }
-  });
-  
-  if (controller.up && player.jumping === false) {
-      if (timePressed > 150) {
-          player.y_velocity -= 85; 
-          player.jumping = true;
-      } else {
-          player.y_velocity -= 30; 
-          player.jumping = true;
-      }
+  if (controller.up) {
+    
+    if (player.jumping === false) {
+      player.y_velocity = -20; 
+      player.jumping = true;
+      jumpKeyHoldDuration = 0; 
+    }
+
+    
+    if (jumpKeyHoldDuration < 20) { 
+      player.y_velocity -= 1.2; 
+      jumpKeyHoldDuration++; 
+    }
   }
 
-
-
-
-
+  if (!controller.up && player.jumping === true) {
   
+    jumpKeyHoldDuration = 0;
+  }
+
   if (controller.left) {
-
     player.x_velocity -= 1;
-
   }
 
   if (controller.right) {
-
     player.x_velocity += 1;
-
   }
 
-  player.y_velocity += 1.5;// gravity
+  player.y_velocity += 1.5; 
   player.x += player.x_velocity;
   player.y += player.y_velocity;
-  player.x_velocity *= 0.9;// friction
-  player.y_velocity *= 0.9;// friction
-
-
-
-  // if player is falling below floor line
-
-
-
+  player.x_velocity *= 0.9; 
+  player.y_velocity *= 0.9; 
 
 
   if (player.y > ground) {
-
     player.jumping = false;
     player.y = ground;
     player.y_velocity = 0;
-    jumpKeyIsStillPressed = false;
-    
-
+    jumpKeyHoldDuration = 0; 
   }
 
   if (player.y == ground) {
-
-    jumpKeyIsStillPressed = false;
-    
-    
-    
-    
+    jumpKeyHoldDuration = 0; 
   }
-  
+
+
 
   
 
@@ -213,7 +162,7 @@ loop = function() {
   //creating enemies
   let enemies = [
     createEnemy(400, context.canvas.height - 32),
-    createEnemy(0, 900)
+    createEnemy(context.canvas.width - context.canvas.width, context.canvas.height - 102)
   ];
   
 
