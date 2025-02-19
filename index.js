@@ -1,10 +1,7 @@
 
 var context, controller, player, loop;
 let jumpKeyIsStillPressed = false;
-let keyPressStartTime;
-let keyPressEndTime;
-let keyPressDuration;
-
+let timePressed;
 context = document.querySelector("canvas").getContext("2d");
 
 context.canvas.height = innerHeight -20;
@@ -87,54 +84,52 @@ controller = {
 
 
 
-document.body.addEventListener("keydown", (e) => {
-  let key = event.key;
-  if(key == 'w'){
-    
-    keyPressStartTime = Date.now();
-
-    
-
-  }
-  
-})
 
 
 
 
 
-document.addEventListener('keyup', (e) => {
-    
-    
-});
 
 
 
 loop = function() {
   
-  if (controller.up){
-    keyPressEndTime = Date.now()
-    keyPressDuration = keyPressEndTime - keyPressStartTime
-    console.log(`Key was pressed for ${keyPressDuration} milliseconds.`)
-
-    if(keyPressDuration >= 200){
-      console.log("check")
-      player.y_velocity -= 35;
-      player.jumping = true;
-      keyPressDuration =0
-      
-    }
+  let timePressed = 0; // Track how long the key is held down
+  let keyHoldInterval = null; // Variable to hold the interval reference
+  
+  // Assuming you have some mechanism to check key status (e.g., controller or key event listeners)
+  document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowUp' || event.code === 'ArrowUp') { // Replace with your controller key condition
+          if (timePressed === 0) { // Start timing when key is first pressed
+              keyHoldInterval = setInterval(() => {
+                  timePressed += 50; // Increment the timePressed by 50ms (adjust if needed)
+              }, 50); // Update time every 50ms (you can adjust this interval for more accuracy)
+          }
+      }
+  });
+  
+  // Stop the timer when key is released (optional if you want to reset on release)
+  document.addEventListener('keyup', (event) => {
+      if (event.key === 'ArrowUp' || event.code === 'ArrowUp') {
+          clearInterval(keyHoldInterval);
+          keyHoldInterval = null;
+          timePressed = 0;
+      }
+  });
+  
+  if (controller.up && player.jumping === false) {
+      if (timePressed > 150) {
+          player.y_velocity -= 85; 
+          player.jumping = true;
+      } else {
+          player.y_velocity -= 30; 
+          player.jumping = true;
+      }
   }
 
-  if (controller.up && player.jumping == false) {
-    
-    
-      player.y_velocity -= 30;
-    
-      player.jumping = true;
-    
 
-  }
+
+
 
   
   if (controller.left) {
@@ -169,11 +164,17 @@ loop = function() {
     player.y = ground;
     player.y_velocity = 0;
     jumpKeyIsStillPressed = false;
+    
+
   }
 
   if (player.y == ground) {
 
     jumpKeyIsStillPressed = false;
+    
+    
+    
+    
   }
   
 
@@ -226,6 +227,7 @@ loop = function() {
   // Collision detection
   enemies.forEach(enemy => {
     if (collision({ player, enemy })) {
+      
       console.log("HIT");
     }
   });
