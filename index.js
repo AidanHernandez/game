@@ -27,7 +27,7 @@ function createEnemy(xPosition, yPosition) {
   return {
     height: 32,
     jumping: true,
-    width: 32,
+    width: 600,
     x: xPosition, 
     x_velocity: 0,
     y: yPosition,
@@ -162,7 +162,7 @@ loop = function() {
   //creating enemies
   let enemies = [
     createEnemy(400, context.canvas.height - 32),
-    createEnemy(context.canvas.width - context.canvas.width, context.canvas.height - 102)
+    createEnemy(context.canvas.width - context.canvas.width, context.canvas.height - 100)
   ];
   
 
@@ -175,7 +175,7 @@ loop = function() {
   
   // Collision detection
   enemies.forEach(enemy => {
-    if (collision({ player, enemy })) {
+    if (collisionDetection(enemy)) {
       
       console.log("HIT");
     }
@@ -210,34 +210,92 @@ window.requestAnimationFrame(loop);
 
 
 
+// if (player.y + player.height > enemy.y && player.y < enemy.y + enemy.height) {
+//   if (player.y_velocity > 0){ 
+//     player.jumping = false;
+//     player.y_velocity = 0;
+//     player.y = enemy.y - player.height; 
+//     jumpKeyIsStillPressed = false;
+//   }
+//   else if (player.y_velocity < 0) { 
+//     player.y_velocity = 0;
+//   player.jumping = false;
+//   jumpKeyIsStillPressed = false;
+//   player.y = enemy.y + enemy.height;
+//   }
+// }
 
 
 
-function collision({ player, enemy }) {
-  if (player.x < enemy.x + enemy.width && player.x + player.width > enemy.x && player.y < enemy.y + enemy.height && player.y + player.height > enemy.y) {
-    if (player.y + player.height > enemy.y && player.y_velocity > 0) {
 
-      player.jumping = false;
-
-      player.y_velocity = 0;
-
-      player.y = enemy.y - player.height;
-      jumpKeyIsStillPressed = false;
-
-    } 
-    else{
-      if (player.x + player.width > enemy.x && player.x < enemy.x + enemy.width) {
-        if (player.x_velocity > 0){ 
-          player.x = enemy.x - player.width;  
+// function collision({ player, enemy }) {
+//   if (player.x < enemy.x + enemy.width && player.x + player.width > enemy.x && player.y < enemy.y + enemy.height && player.y + player.height > enemy.y) {
+    
+    
+//     if (player.y + player.height > enemy.y && player.y < enemy.y + enemy.height) {
+//       if (player.y_velocity > 0){ 
+//         player.jumping = false;
+//         player.y_velocity = 0;
+//         player.y = enemy.y - player.height; 
+//         jumpKeyIsStillPressed = false;
+//       }
+//       else if (player.y_velocity < 0) { 
+//         player.y_velocity = 0;
+//       player.jumping = false;
+//       jumpKeyIsStillPressed = false;
+//       player.y = enemy.y + enemy.height;
+//       }
+//     }
+//     else{
+//       if (player.x + player.width > enemy.x && player.x < enemy.x + enemy.width) {
+//         if (player.x_velocity > 0){ 
+//           player.x = enemy.x - player.width;  
           
-        } 
-        else if (player.x_velocity < 0) { 
-          player.x = enemy.x + enemy.width;  
-        }
+//         } 
+//         else if (player.x_velocity < 0) { 
+//           player.x = enemy.x + enemy.width;  
+//         }
 
-        player.x_velocity = 0;
+//         player.x_velocity = 0;
+//       }
+//     }
+//   }
+// }
+
+
+function collisionDetection(enemy) {
+  if (player.x + player.width < enemy.x ||
+      player.x > enemy.x + enemy.width ||
+      player.y + player.height < enemy.y ||
+      player.y > enemy.y + enemy.height) {
+          return
       }
-    }
+      narrowPhase(enemy);
+}
+
+function narrowPhase(enemy) {
+  let playerTop_ObjBottom = Math.abs(player.y - (enemy.y + enemy.height));
+  let playerRight_ObjLeft = Math.abs((player.x + player.width) - enemy.x);
+  let playerLeft_ObjRight = Math.abs(player.x - (enemy.x + enemy.width));
+  let playerBottom_ObjTop = Math.abs((player.y + player.height) - enemy.y);
+
+  if ((player.y <= enemy.y + enemy.height && player.y + player.height > enemy.y + enemy.height) && (playerTop_ObjBottom < playerRight_ObjLeft && playerTop_ObjBottom < playerLeft_ObjRight)) {
+      player.y = enemy.y + enemy.height;
+      player.y_velocity = 0;
+      console.log("check")
+  }
+  if ((player.y + player.height>= enemy.y && player.y < enemy.y) && (playerBottom_ObjTop < playerRight_ObjLeft && playerBottom_ObjTop < playerLeft_ObjRight)) {
+      player.y = enemy.y - player.height; 
+      player.jumping = false;
+      player.y_velocity = 0;
+  }
+  if ((player.x + player.width >= enemy.x && player.x < enemy.x) && (playerRight_ObjLeft < playerTop_ObjBottom && playerRight_ObjLeft < playerBottom_ObjTop)) {
+      player.x = enemy.x - player.width;
+      player.x_velocity = 0; 
+  }
+  if ((player.x <= enemy.x + enemy.width && player.x + player.width > enemy.x + enemy.width) && (playerLeft_ObjRight < playerTop_ObjBottom && playerLeft_ObjRight < playerBottom_ObjTop)) {
+      player.x = enemy.x + enemy.width;
+      player.x_velocity = 0; 
   }
 }
 
