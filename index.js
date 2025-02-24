@@ -4,14 +4,14 @@ let jumpKeyIsStillPressed = false;
 let timePressed;
 context = document.querySelector("canvas").getContext("2d");
 
-context.canvas.height = innerHeight -20;
+context.canvas.height = innerHeight - 20;
 context.canvas.width = innerWidth - 20;
 
 player = {
-
-  height:64,
+  name: "player",
+  height: context.canvas.height/20,
   jumping:true,
-  width:64,
+  width:context.canvas.height/20,
   x:144, // center of the canvas
   x_velocity:0,
   y: 0,
@@ -21,31 +21,32 @@ player = {
 };
 var ground = context.canvas.height - player.y - player.height;
 
-
+console.log(player)
 
 
  
 function createEnemy(xPosition, yPosition) {
   return {
-    height: 32,
+    name: "enemy",
+    height: context.canvas.height/27,
     jumping: true,
-    width: 32,
+    width: context.canvas.height/27,
     x: xPosition, 
     x_velocity: 0,
     y: yPosition,
     y_velocity: 0,
-    moveSpeed: 6 // Add movement speed for each enemy
+    moveSpeed: 6 
   };
 }
 
 function createFloor(width, height, xPosition, yPosition) {
   return {
+    name: "floor",
     height: height,
     width: width,
     x: xPosition, 
     y: yPosition
    
-    
   };
 }
 
@@ -110,11 +111,19 @@ let playerJumped = false;
 
 
 let enemies = [
-  createEnemy(400, context.canvas.height - 32),
-  createEnemy(context.canvas.width - 100, context.canvas.height - 32)
+  createEnemy(getRandomNumber(context.canvas.width - context.canvas.width, context.canvas.width), getRandomNumber(context.canvas.height - context.canvas.height, context.canvas.height)),
+  createEnemy(getRandomNumber(context.canvas.width - context.canvas.width, context.canvas.width), getRandomNumber(context.canvas.height - context.canvas.height, context.canvas.height))
 ];
 
+
+
+
+
+
+
+
 let floor = [
+  createFloor(context.canvas.width + player.width, 20, context.canvas.width - context.canvas.width - player.width, context.canvas.height/1.01),
   createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width/4, context.canvas.height/1.1),
   createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width, context.canvas.height/1.1),
   createFloor(context.canvas.width / 2.7, 20, context.canvas.width - context.canvas.width/1.46, context.canvas.height/1.2),
@@ -141,8 +150,6 @@ loop = function() {
       player.jumping = true;
       jumpKeyHoldDuration = 0; 
       playerJumped = true;
-      
-      
       
       if(numberJumps == 2){
         player.y_velocity = -40; 
@@ -200,16 +207,14 @@ loop = function() {
     playerJumped = false;
   }
 
-  if (!player.jumping) {
-      // Reset the flag when player stops jumping
-  }
+  
 
   if(controller.dash && player.dash == false){
     // console.log("hlloa")
     setTimeout(player.dash = true , 300)
     
-    player.x_velocity *= 5; 
-    
+    player.x_velocity *= 4; 
+    player.jumping = false
   }
   else{
     player.x_velocity *= 0.9; 
@@ -265,26 +270,28 @@ for(i = 0; i < enemies.length; i++){
 //goes through list
 enemies.forEach(enemy => {
 
-
   
-  
-  if (enemy.x < player.x) {
-    enemy.x_velocity = enemy.moveSpeed;  
+  if (Math.abs(enemy.x - player.x) <= 10) {
+    enemy.x_velocity = 0;
+  } else if (enemy.x < player.x) {
+    enemy.x_velocity = enemy.moveSpeed;
   } else if (enemy.x > player.x) {
-    enemy.x_velocity = -enemy.moveSpeed; 
-  } else {
-    enemy.x_velocity = 0; 
+    enemy.x_velocity = -enemy.moveSpeed;
   }
 
+  // if (num1 >= num2 - 10 && num1 <= num2 + 10) 
 
   enemy.x += enemy.x_velocity;
 
-
+  
 
   
   if (collisionDetection(player, enemy)) {
     console.log("YOU LOST")
   }
+
+
+  //MAKE OBJECT ON OBJECT COLLISOION
   enemies.forEach(otherEnemy => {
     if (enemy !== otherEnemy && collisionDetection(enemy, otherEnemy)) {
       
@@ -328,7 +335,9 @@ window.requestAnimationFrame(loop);
 
 
 
-
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
   
 
 
@@ -354,34 +363,45 @@ function narrowPhase(obj1, obj2) {
   let leftRight = Math.abs(obj1.x - (obj2.x + obj2.width));
   let bottomTop = Math.abs((obj1.y + obj1.height) - obj2.y);
 
-  // Player or enemy collides from above (landing or hitting the top)
+  // Player or enemy collides from below
   if ((obj1.y <= obj2.y + obj2.height && obj1.y + obj1.height > obj2.y + obj2.height) && (topBottom < rightLeft && topBottom < leftRight)) {
-    obj1.y = obj2.y + obj2.height; // Place obj1 on top of obj2 (landed)
-    
-    obj1.y_velocity = 0; // Stop vertical movement
+    obj1.y = obj2.y + obj2.height;  // Adjust position to stop below the surface
+    obj1.y_velocity = 0;  // Stop vertical movement
   }
 
-  // Player or enemy collides from below (hitting the bottom)
+  // Player or enemy collides from top
   if ((obj1.y + obj1.height >= obj2.y && obj1.y < obj2.y) && (bottomTop < rightLeft && bottomTop < leftRight)) {
-    obj1.y = obj2.y - obj1.height; // Place obj1 below obj2
-    obj1.jumping = false;
-    playerJumped = false; 
-    numberJumps = 0;
-    obj1.y_velocity = 0; // Stop vertical movement
+    obj1.y = obj2.y - obj1.height;  // Adjust position to stop on top of the surface
+
+    if (obj1.name == 'player') {
+      player.jumping = false;
+      numberJumps = 0;
+      playerJumped = false;  // Reset jump state
+    }
+
+    if (obj1.name == 'enemy') {
+     
+      obj1.jumping = false;
+      
+      obj1.y_velocity = 0;  // Stop vertdwical movement when enemy lands
+    }
+
+    obj1.y_velocity = 0;  // Stop vertical movement
   }
 
   // Player or enemy collides from the left (hitting the right side)
   if ((obj1.x + obj1.width >= obj2.x && obj1.x < obj2.x) && (rightLeft < topBottom && rightLeft < bottomTop)) {
-    obj1.x = obj2.x - obj1.width; // Move obj1 to the left of obj2
-    obj1.x_velocity = 0; // Stop horizontal movement
+    obj1.x = obj2.x - obj1.width;  // Move obj1 to the left of obj2
+    obj1.x_velocity = 0;  // Stop horizontal movement
   }
 
   // Player or enemy collides from the right (hitting the left side)
   if ((obj1.x <= obj2.x + obj2.width && obj1.x + obj1.width > obj2.x + obj2.width) && (leftRight < topBottom && leftRight < bottomTop)) {
-    obj1.x = obj2.x + obj2.width; // Move obj1 to the right of obj2
-    obj1.x_velocity = 0; // Stop horizontal movement
+    obj1.x = obj2.x + obj2.width;  // Move obj1 to the right of obj2
+    obj1.x_velocity = 0;  // Stop horizontal movement
   }
 }
+
 
 
 
