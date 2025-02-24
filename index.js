@@ -23,6 +23,7 @@ var ground = context.canvas.height - player.y - player.height;
 
 
 
+
  
 function createEnemy(xPosition, yPosition) {
   return {
@@ -32,10 +33,21 @@ function createEnemy(xPosition, yPosition) {
     x: xPosition, 
     x_velocity: 0,
     y: yPosition,
-    y_velocity: 0
+    y_velocity: 0,
+    moveSpeed: 6 // Add movement speed for each enemy
   };
 }
 
+function createFloor(width, height, xPosition, yPosition) {
+  return {
+    height: height,
+    width: width,
+    x: xPosition, 
+    y: yPosition
+   
+    
+  };
+}
 
 
 
@@ -94,9 +106,32 @@ document.body.addEventListener("keydown", (e) => {
 
 let jumpKeyHoldDuration = 0;
 let canDoubleJump = true;
+let playerJumped = false;  
+
+
+let enemies = [
+  createEnemy(400, context.canvas.height - 32),
+  createEnemy(context.canvas.width - 100, context.canvas.height - 32)
+];
+
+let floor = [
+  createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width/4, context.canvas.height/1.1),
+  createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width, context.canvas.height/1.1),
+  createFloor(context.canvas.width / 2.7, 20, context.canvas.width - context.canvas.width/1.46, context.canvas.height/1.2),
+  createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width/4, context.canvas.height/1.3),
+  createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width, context.canvas.height/1.3),
+  createFloor(context.canvas.width / 2.7, 20, context.canvas.width - context.canvas.width/1.46, context.canvas.height/1.4)
+];
 
 loop = function() {
   
+
+  if(player.x < context.canvas.width - context.canvas.width - player.width){
+    player.x = context.canvas.width
+  }
+  if(player.x > context.canvas.width){
+    player.x = context.canvas.width - context.canvas.width - player.width
+  }
   
 
   if (controller.up) {
@@ -105,13 +140,13 @@ loop = function() {
       player.y_velocity = -20; 
       player.jumping = true;
       jumpKeyHoldDuration = 0; 
+      playerJumped = true;
+      
+      
       
       if(numberJumps == 2){
         player.y_velocity = -40; 
-        
-      }
-      else{
-        
+        playerJumped = false;
       }
     }
 
@@ -119,11 +154,14 @@ loop = function() {
     if (jumpKeyHoldDuration < 20) { 
       player.y_velocity -= 1.2; 
       jumpKeyHoldDuration++; 
+      
+      
     }
   }
 
   if (!controller.up && player.jumping === true) {
     jumpKeyHoldDuration = 0;
+    playerJumped = false;
   }
 
 
@@ -152,12 +190,18 @@ loop = function() {
     player.y = ground;
     player.y_velocity = 0;
     jumpKeyHoldDuration = 0; 
+    playerJumped = false;
   }
 
   if (player.y == ground) {
     jumpKeyHoldDuration = 0; 
     // player.dash = false
     numberJumps = 0;
+    playerJumped = false;
+  }
+
+  if (!player.jumping) {
+      // Reset the flag when player stops jumping
   }
 
   if(controller.dash && player.dash == false){
@@ -171,86 +215,110 @@ loop = function() {
     player.x_velocity *= 0.9; 
   }
 
-  document.body.addEventListener("keyup", (e) =>{
+document.body.addEventListener("keyup", (e) =>{
     
     switch(event.keyCode) {
       case 16: //lshift
         player.dash = false
         break
     }  
+});
+
+
+
+//bg color
+context.fillStyle = "#202020";
+context.fillRect(0, 0, innerWidth, innerHeight);
+context.fillStyle = "#ff0000";
+
+
+//make player
+context.beginPath();
+context.rect(player.x, player.y, player.width, player.height);
+context.fill();
+
+
+for(i = 0; i < enemies.length; i++){
+  
+
+  var enemyGround = context.canvas.height - enemies[i].height;
+  
+  if ((playerJumped && !enemies[i].jumping)) {
+    enemies[i].y_velocity = -45; 
+    enemies[i].jumping = true; 
+    // playerJumped = false;
+  }
+
+  
+
+  enemies[i].y_velocity += 1.5; 
+  enemies[i].y += enemies[i].y_velocity;
+  enemies[i].y_velocity *= 0.9; 
+  
+  if (enemies[i].y > enemyGround) {
+    enemies[i].jumping = false;
+    enemies[i].y = enemyGround;
+    enemies[i].y_velocity = 0;  
+  }
+}
+
+//goes through list
+enemies.forEach(enemy => {
+
+
+  
+  
+  if (enemy.x < player.x) {
+    enemy.x_velocity = enemy.moveSpeed;  
+  } else if (enemy.x > player.x) {
+    enemy.x_velocity = -enemy.moveSpeed; 
+  } else {
+    enemy.x_velocity = 0; 
+  }
+
+
+  enemy.x += enemy.x_velocity;
+
+
+
+  
+  if (collisionDetection(player, enemy)) {
+    console.log("YOU LOST")
+  }
+  enemies.forEach(otherEnemy => {
+    if (enemy !== otherEnemy && collisionDetection(enemy, otherEnemy)) {
+      
+    }
   });
-
-
-
-  
-
-    
-  
-    
-
-
-  
-
-
-
-
-  //bg color
-  context.fillStyle = "#202020";
-  context.fillRect(0, 0, innerWidth, innerHeight);
-  context.fillStyle = "#ff0000";
-
-
-
-
-
-
-  //make player
-  context.beginPath();
-  context.rect(player.x, player.y, player.width, player.height);
-  context.fill();
-
-
-
-  //creating enemies
-  let enemies = [
-    createEnemy(400, context.canvas.height - 32),
-    createEnemy(context.canvas.width - context.canvas.width, context.canvas.height - 32)
-  ];
-
-  
-  
 
   context.fillStyle = "blue";
   context.beginPath();
-  
-  
-  
-  
+  context.rect(enemy.x, enemy.y, enemy.width, enemy.height);
+  context.fill();
+});
 
-  
+floor.forEach(floor => {
 
- 
-
-  
+  if (collisionDetection(player, floor)) {
+    
+  }
 
   enemies.forEach(enemy => {
-    moveEnemyTowardsPlayer(enemy); 
-    updateEnemyPosition(enemy); 
-
-
-
-    if (collisionDetection(enemy)) {
-      
-      console.log("HIT");
+    if (collisionDetection(enemy, floor)) {
+    
     }
-    context.rect(enemy.x, enemy.y, enemy.width, enemy.height);
-  });
-  context.fill();
-  
-  
-  window.requestAnimationFrame(loop);
+  })
 
+  context.fillStyle = "green";
+  context.beginPath();
+  context.rect(floor.x, floor.y, floor.width, floor.height);
+  context.fill();
+})
+
+
+window.requestAnimationFrame(loop);
 };
+
 
 
 
@@ -265,83 +333,53 @@ window.requestAnimationFrame(loop);
 
 
 
-function moveEnemyTowardsPlayer(enemy) {
-  let dx = player.x - enemy.x;
-  let dy = player.y - enemy.y;
 
-  let distance = Math.sqrt(dx * dx + dy * dy);
 
-  if (distance > 0) {
+
+
+
+
+function collisionDetection(obj1, obj2) {
+  if (obj1.x + obj1.width < obj2.x || obj1.x > obj2.x + obj2.width || obj1.y + obj1.height < obj2.y || obj1.y > obj2.y + obj2.height) {
+    return false; // No collision
+  }
+  narrowPhase(obj1, obj2); // If collision, run narrow phase
+  return true; // Collision detected
+}
+
+// Narrow phase for finer collision handling (this applies to both player/enemies and enemies themselves)
+function narrowPhase(obj1, obj2) {
+  let topBottom = Math.abs(obj1.y - (obj2.y + obj2.height));
+  let rightLeft = Math.abs((obj1.x + obj1.width) - obj2.x);
+  let leftRight = Math.abs(obj1.x - (obj2.x + obj2.width));
+  let bottomTop = Math.abs((obj1.y + obj1.height) - obj2.y);
+
+  // Player or enemy collides from above (landing or hitting the top)
+  if ((obj1.y <= obj2.y + obj2.height && obj1.y + obj1.height > obj2.y + obj2.height) && (topBottom < rightLeft && topBottom < leftRight)) {
+    obj1.y = obj2.y + obj2.height; // Place obj1 on top of obj2 (landed)
     
-    const speed = 3; 
-
-    
-    const maxSpeed = 400;  
-    const dynamicSpeed = Math.min(speed + distance / 100, maxSpeed);
-
-
-    enemy.x_velocity = (dx / distance) * dynamicSpeed;
-    enemy.y_velocity = (dy / distance) * dynamicSpeed;
+    obj1.y_velocity = 0; // Stop vertical movement
   }
-}
 
-
-function updateEnemyPosition(enemy) {
-
-  
-
-  enemy.x += enemy.x_velocity * 20
-  enemy.y += enemy.y_velocity;
-
-  
-  
-}
-
-
-
-
-
-
-
-
-
-
-
-function collisionDetection(enemy) {
-  if (player.x + player.width < enemy.x ||
-      player.x > enemy.x + enemy.width ||
-      player.y + player.height < enemy.y ||
-      player.y > enemy.y + enemy.height) {
-          return
-      }
-      narrowPhase(enemy);
-}
-
-function narrowPhase(enemy) {
-  let playerTop_ObjBottom = Math.abs(player.y - (enemy.y + enemy.height));
-  let playerRight_ObjLeft = Math.abs((player.x + player.width) - enemy.x);
-  let playerLeft_ObjRight = Math.abs(player.x - (enemy.x + enemy.width));
-  let playerBottom_ObjTop = Math.abs((player.y + player.height) - enemy.y);
-
-  if ((player.y <= enemy.y + enemy.height && player.y + player.height > enemy.y + enemy.height) && (playerTop_ObjBottom < playerRight_ObjLeft && playerTop_ObjBottom < playerLeft_ObjRight)) {
-      player.y = enemy.y + enemy.height;
-      
-      player.y_velocity = 0;
-      
+  // Player or enemy collides from below (hitting the bottom)
+  if ((obj1.y + obj1.height >= obj2.y && obj1.y < obj2.y) && (bottomTop < rightLeft && bottomTop < leftRight)) {
+    obj1.y = obj2.y - obj1.height; // Place obj1 below obj2
+    obj1.jumping = false;
+    playerJumped = false; 
+    numberJumps = 0;
+    obj1.y_velocity = 0; // Stop vertical movement
   }
-  if ((player.y + player.height>= enemy.y && player.y < enemy.y) && (playerBottom_ObjTop < playerRight_ObjLeft && playerBottom_ObjTop < playerLeft_ObjRight)) {
-      player.y = enemy.y - player.height; 
-      player.jumping = false;
-      numberJumps = 0;
-      player.y_velocity = 0;
+
+  // Player or enemy collides from the left (hitting the right side)
+  if ((obj1.x + obj1.width >= obj2.x && obj1.x < obj2.x) && (rightLeft < topBottom && rightLeft < bottomTop)) {
+    obj1.x = obj2.x - obj1.width; // Move obj1 to the left of obj2
+    obj1.x_velocity = 0; // Stop horizontal movement
   }
-  if ((player.x + player.width >= enemy.x && player.x < enemy.x) && (playerRight_ObjLeft < playerTop_ObjBottom && playerRight_ObjLeft < playerBottom_ObjTop)) {
-      player.x = enemy.x - player.width;
-      player.x_velocity = 0; 
-  }
-  if ((player.x <= enemy.x + enemy.width && player.x + player.width > enemy.x + enemy.width) && (playerLeft_ObjRight < playerTop_ObjBottom && playerLeft_ObjRight < playerBottom_ObjTop)) {
-      player.x = enemy.x + enemy.width;
-      player.x_velocity = 0; 
+
+  // Player or enemy collides from the right (hitting the left side)
+  if ((obj1.x <= obj2.x + obj2.width && obj1.x + obj1.width > obj2.x + obj2.width) && (leftRight < topBottom && leftRight < bottomTop)) {
+    obj1.x = obj2.x + obj2.width; // Move obj1 to the right of obj2
+    obj1.x_velocity = 0; // Stop horizontal movement
   }
 }
 
