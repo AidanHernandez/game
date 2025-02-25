@@ -10,12 +10,16 @@ body{
     font-family: 'technoRace', sans-serif;
     background-color: #202020;
     color: white;
+    margin: 0px;
+    overflow-x: hidden;
+    /* overflow-y: hidden; */
 }
 
 main{
     display: flex;
     flex-flow: column;
     align-items: center;
+    z-index: 5;
 }
 
 h1{
@@ -23,6 +27,7 @@ h1{
     margin: 0;
     margin-top: 25px;
     text-shadow: 9px 14px 4px rgba(0, 0, 0, 0.25);
+    z-index: 5;
 }
 
 button{
@@ -33,5 +38,13 @@ button{
     background-color: #141414;
     color: white;
     border: none;
-    margin-top: 85px
+    margin-top: 65px;
+    z-index: 5;
+}
+
+canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    /* background-color: #87ceeb; */
 }
