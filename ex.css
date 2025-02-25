@@ -1,0 +1,37 @@
+@font-face {
+    font-family: 'technoRace';
+    src: url('fonts/TechnoRace-Italic.woff') format('woff');
+    font-weight: lighter;
+    font-style: normal;
+}
+
+
+body{
+    font-family: 'technoRace', sans-serif;
+    background-color: #202020;
+    color: white;
+}
+
+main{
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+}
+
+h1{
+    font-size: 128px;
+    margin: 0;
+    margin-top: 25px;
+    text-shadow: 9px 14px 4px rgba(0, 0, 0, 0.25);
+}
+
+button{
+    font-family: 'technoRace', sans-serif;
+    width: 455px;
+    height: 155px;
+    font-size: 96px;
+    background-color: #141414;
+    color: white;
+    border: none;
+    margin-top: 85px
+}

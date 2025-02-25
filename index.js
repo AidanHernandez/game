@@ -120,17 +120,19 @@ let enemies = [
 
 
 
-
+//width, height, x, y
 
 let floor = [
-  createFloor(context.canvas.width + player.width, 20, context.canvas.width - context.canvas.width - player.width, context.canvas.height/1.01),
-  createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width/4, context.canvas.height/1.1),
-  createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width, context.canvas.height/1.1),
-  createFloor(context.canvas.width / 2.7, 20, context.canvas.width - context.canvas.width/1.46, context.canvas.height/1.2),
-  createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width/4, context.canvas.height/1.3),
-  createFloor(context.canvas.width / 4, 20, context.canvas.width - context.canvas.width, context.canvas.height/1.3),
-  createFloor(context.canvas.width / 2.7, 20, context.canvas.width - context.canvas.width/1.46, context.canvas.height/1.4)
+  createFloor(context.canvas.width + player.width, context.canvas.height/47, context.canvas.width - context.canvas.width - player.width, context.canvas.height/1.01),
+  createFloor(context.canvas.width / 4, context.canvas.height/47, context.canvas.width - context.canvas.width/4, context.canvas.height/1.1),
+  createFloor(context.canvas.width / 4, context.canvas.height/47, context.canvas.width - context.canvas.width, context.canvas.height/1.1),
+  createFloor(context.canvas.width / 2.7, context.canvas.height/47, context.canvas.width - context.canvas.width/1.46, context.canvas.height/1.2),
+  createFloor(context.canvas.width / 4, context.canvas.height/47, context.canvas.width - context.canvas.width/4, context.canvas.height/1.3),
+  createFloor(context.canvas.width / 4, context.canvas.height/47, context.canvas.width - context.canvas.width, context.canvas.height/1.3),
+  createFloor(context.canvas.width / 2.7, context.canvas.height/47, context.canvas.width - context.canvas.width/1.46, context.canvas.height/1.4)
 ];
+
+
 
 loop = function() {
   
@@ -173,7 +175,7 @@ loop = function() {
 
 
 
-
+  
 
 
 
@@ -210,11 +212,9 @@ loop = function() {
   
 
   if(controller.dash && player.dash == false){
-    // console.log("hlloa")
     setTimeout(player.dash = true , 300)
-    
     player.x_velocity *= 4; 
-    player.jumping = false
+    
   }
   else{
     player.x_velocity *= 0.9; 
@@ -243,15 +243,19 @@ context.rect(player.x, player.y, player.width, player.height);
 context.fill();
 
 
+
+
 for(i = 0; i < enemies.length; i++){
   
 
   var enemyGround = context.canvas.height - enemies[i].height;
+
   
+  // console.log(enemies[i].jumping)
   if ((playerJumped && !enemies[i].jumping)) {
     enemies[i].y_velocity = -45; 
     enemies[i].jumping = true; 
-    // playerJumped = false;
+    
   }
 
   
@@ -279,7 +283,6 @@ enemies.forEach(enemy => {
     enemy.x_velocity = -enemy.moveSpeed;
   }
 
-  // if (num1 >= num2 - 10 && num1 <= num2 + 10) 
 
   enemy.x += enemy.x_velocity;
 
@@ -293,34 +296,44 @@ enemies.forEach(enemy => {
 
   //MAKE OBJECT ON OBJECT COLLISOION
   enemies.forEach(otherEnemy => {
-    if (enemy !== otherEnemy && collisionDetection(enemy, otherEnemy)) {
+    if (collisionDetection(enemy, otherEnemy)) {
       
     }
   });
 
+
+  floor.forEach(floor => {
+
+    if (collisionDetection(player, floor)) {
+      
+    }
+  
+    if (collisionDetection(enemy, floor)) {
+      
+    }
+  
+    context.fillStyle = "green";
+    context.beginPath();
+    context.rect(floor.x, floor.y, floor.width, floor.height);
+    context.fill();
+  })
+
+
+  
+
+  // ------------
   context.fillStyle = "blue";
   context.beginPath();
   context.rect(enemy.x, enemy.y, enemy.width, enemy.height);
   context.fill();
 });
 
-floor.forEach(floor => {
 
-  if (collisionDetection(player, floor)) {
-    
-  }
 
-  enemies.forEach(enemy => {
-    if (collisionDetection(enemy, floor)) {
-    
-    }
-  })
 
-  context.fillStyle = "green";
-  context.beginPath();
-  context.rect(floor.x, floor.y, floor.width, floor.height);
-  context.fill();
-})
+
+
+
 
 
 window.requestAnimationFrame(loop);
@@ -348,62 +361,67 @@ function getRandomNumber(min, max) {
 
 
 
-function collisionDetection(obj1, obj2) {
-  if (obj1.x + obj1.width < obj2.x || obj1.x > obj2.x + obj2.width || obj1.y + obj1.height < obj2.y || obj1.y > obj2.y + obj2.height) {
-    return false; // No collision
-  }
-  narrowPhase(obj1, obj2); // If collision, run narrow phase
-  return true; // Collision detected
-}
 
-// Narrow phase for finer collision handling (this applies to both player/enemies and enemies themselves)
-function narrowPhase(obj1, obj2) {
+
+
+
+
+
+
+
+
+function collisionDetection(obj1, obj2) {
+
   let topBottom = Math.abs(obj1.y - (obj2.y + obj2.height));
   let rightLeft = Math.abs((obj1.x + obj1.width) - obj2.x);
   let leftRight = Math.abs(obj1.x - (obj2.x + obj2.width));
   let bottomTop = Math.abs((obj1.y + obj1.height) - obj2.y);
 
-  // Player or enemy collides from below
-  if ((obj1.y <= obj2.y + obj2.height && obj1.y + obj1.height > obj2.y + obj2.height) && (topBottom < rightLeft && topBottom < leftRight)) {
-    obj1.y = obj2.y + obj2.height;  // Adjust position to stop below the surface
-    obj1.y_velocity = 0;  // Stop vertical movement
+  if (obj1.x + obj1.width < obj2.x || obj1.x > obj2.x + obj2.width || obj1.y + obj1.height < obj2.y || obj1.y > obj2.y + obj2.height) {
+    return false; 
   }
 
-  // Player or enemy collides from top
+
+ 
+
+  
+  if ((obj1.y <= obj2.y + obj2.height && obj1.y + obj1.height > obj2.y + obj2.height) && (topBottom < rightLeft && topBottom < leftRight)) {
+    obj1.y = obj2.y + obj2.height;  
+    obj1.y_velocity = 0;  
+  }
+
+  
   if ((obj1.y + obj1.height >= obj2.y && obj1.y < obj2.y) && (bottomTop < rightLeft && bottomTop < leftRight)) {
-    obj1.y = obj2.y - obj1.height;  // Adjust position to stop on top of the surface
+    obj1.y = obj2.y - obj1.height;  
 
     if (obj1.name == 'player') {
       player.jumping = false;
       numberJumps = 0;
-      playerJumped = false;  // Reset jump state
+      playerJumped = false;  
     }
 
     if (obj1.name == 'enemy') {
-     
       obj1.jumping = false;
       
-      obj1.y_velocity = 0;  // Stop vertdwical movement when enemy lands
     }
 
-    obj1.y_velocity = 0;  // Stop vertical movement
+
+    obj1.y_velocity = 0;  
   }
 
-  // Player or enemy collides from the left (hitting the right side)
+  
   if ((obj1.x + obj1.width >= obj2.x && obj1.x < obj2.x) && (rightLeft < topBottom && rightLeft < bottomTop)) {
-    obj1.x = obj2.x - obj1.width;  // Move obj1 to the left of obj2
-    obj1.x_velocity = 0;  // Stop horizontal movement
+    obj1.x = obj2.x - obj1.width;  
+    obj1.x_velocity = 0;  
   }
 
-  // Player or enemy collides from the right (hitting the left side)
+  
   if ((obj1.x <= obj2.x + obj2.width && obj1.x + obj1.width > obj2.x + obj2.width) && (leftRight < topBottom && leftRight < bottomTop)) {
-    obj1.x = obj2.x + obj2.width;  // Move obj1 to the right of obj2
-    obj1.x_velocity = 0;  // Stop horizontal movement
+    obj1.x = obj2.x + obj2.width;  
+    obj1.x_velocity = 0;  
   }
+  
 }
-
-
-
 
 
 //player.x < enemy1.x + enemy1.width right side
@@ -414,3 +432,5 @@ function narrowPhase(obj1, obj2) {
 //player.x + player.width > enemy1.x left side
 
 //player.y + player.height > enemy1.y top
+
+
